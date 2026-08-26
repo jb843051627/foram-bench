@@ -25,12 +25,12 @@ func NormalizeTaxon(value string) string {
 }
 
 func NormalizeObservations(items []model.Observation) []model.Observation {
-	result := make([]model.Observation, 0, len(items))
-	for _, item := range items {
-		item.Taxon = NormalizeTaxon(item.Taxon)
-		item.Preservation = strings.ToLower(strings.TrimSpace(item.Preservation))
-		item.Notes = strings.TrimSpace(item.Notes)
-		result = append(result, item)
+	result := make([]model.Observation, len(items))
+	copy(result, items)
+	for index := range result {
+		result[index].Taxon = NormalizeTaxon(result[index].Taxon)
+		result[index].Preservation = strings.ToLower(strings.TrimSpace(result[index].Preservation))
+		result[index].Notes = strings.TrimSpace(result[index].Notes)
 	}
 	return result
 }

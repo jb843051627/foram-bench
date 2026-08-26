@@ -30,7 +30,8 @@ func FromObservations(items []model.Observation) EvidenceSet {
 }
 
 func (s EvidenceSet) Sorted() []Evidence {
-	result := append([]Evidence(nil), s.Items...)
+	result := make([]Evidence, len(s.Items))
+	copy(result, s.Items)
 	sort.SliceStable(result, func(i, j int) bool {
 		if result[i].Taxon == result[j].Taxon {
 			return result[i].Count > result[j].Count

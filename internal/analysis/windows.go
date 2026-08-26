@@ -62,7 +62,7 @@ func nextLocalDay(start time.Time) time.Time {
 }
 
 func InWindow(observation model.Observation, start, end time.Time) bool {
-	return !observation.ObservedAt.Before(start) && !observation.ObservedAt.After(end)
+	return !observation.ObservedAt.Before(start) && observation.ObservedAt.Before(end)
 }
 
 func DayBounds(at time.Time) (time.Time, time.Time) {

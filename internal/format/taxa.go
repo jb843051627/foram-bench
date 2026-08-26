@@ -8,7 +8,8 @@ import (
 )
 
 func TaxonList(items []analysis.Abundance) string {
-	copyItems := append([]analysis.Abundance(nil), items...)
+	copyItems := make([]analysis.Abundance, len(items))
+	copy(copyItems, items)
 	sort.SliceStable(copyItems, func(i, j int) bool { return copyItems[i].Rank < copyItems[j].Rank })
 	parts := make([]string, 0, len(copyItems))
 	for _, item := range copyItems {

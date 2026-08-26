@@ -126,6 +126,18 @@ func (l *Lab) BlockBatch(ctx context.Context, id string, expectedRevision int, r
 }
 
 func (l *Lab) ResumeBatch(ctx context.Context, id string, expectedRevision int) (model.PreparationBatch, error) {
+	l.qualityMu.Lock()
+	defer l.qualityMu.Unlock()
+	if err := checkContext(ctx); err != nil {
+		return model.PreparationBatch{}, err
+	}
+	blocked, err := l.HasBlockingQuality(ctx, id)
+	if err != nil {
+		return model.PreparationBatch{}, err
+	}
+	if blocked {
+		return model.PreparationBatch{}, fmt.Errorf("batch %s has unresolved quality flags: %w", id, model.ErrInvalidState)
+	}
 	return l.transitionBatch(ctx, id, model.BatchProcessing, expectedRevision)
 }
 

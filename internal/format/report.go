@@ -17,10 +17,14 @@ type ReportDocument struct {
 }
 
 func NewReportDocument(sample model.Sample, batch model.PreparationBatch, score analysis.QualitySummary) ReportDocument {
+	collectionDate := sample.CollectionDate
+	if location, err := time.LoadLocation(sample.TimeZone); err == nil {
+		collectionDate = collectionDate.In(location)
+	}
 	return ReportDocument{
 		Title:    fmt.Sprintf("微体化石样品 %s", sample.ID),
 		Subtitle: fmt.Sprintf("制备批次 %s · %s · 质量等级 %s", batch.ID, sample.Location, score.Grade),
-		Paragraphs: []string{fmt.Sprintf("样品采集于 %s，材料为 %s。", sample.CollectionDate.In(time.FixedZone("local", 0)).Format("2006-01-02"), sample.Material),
+		Paragraphs: []string{fmt.Sprintf("样品采集于 %s，材料为 %s。", collectionDate.Format("2006-01-02"), sample.Material),
 			fmt.Sprintf("观察覆盖率 %s，完整性 %s，保存状况 %s。", Percent(score.Coverage), Percent(score.Completeness), Percent(score.Preservation))},
 	}
 }

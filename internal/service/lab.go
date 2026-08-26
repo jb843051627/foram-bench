@@ -20,9 +20,11 @@ type Lab struct {
 	stateMu       sync.Mutex
 	batchCreateMu sync.Mutex
 	sectionMu     sync.Mutex
+	siteMu        sync.Mutex
 	reviewMu      sync.Mutex
 	reportMu      sync.Mutex
 	qualityMu     sync.Mutex
+	noteMu        sync.Mutex
 	closeOnce     sync.Once
 	closed        chan struct{}
 }

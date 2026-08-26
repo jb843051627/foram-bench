@@ -61,6 +61,8 @@ func (l *Lab) ListSites(ctx context.Context, activeOnly bool) ([]model.Collectio
 }
 
 func (l *Lab) RetireSite(ctx context.Context, code string) (model.CollectionSite, error) {
+	l.siteMu.Lock()
+	defer l.siteMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.CollectionSite{}, err
 	}

@@ -25,7 +25,8 @@ func ValidateLayerProfile(profile LayerProfile) []LayerIssue {
 	if profile.SiteCode == "" {
 		issues = append(issues, LayerIssue{Code: "SITE_MISSING", Severity: "critical", Message: "层位剖面缺少调查点代码"})
 	}
-	ordered := append([]model.StratigraphicLayer(nil), profile.Layers...)
+	ordered := make([]model.StratigraphicLayer, len(profile.Layers))
+	copy(ordered, profile.Layers)
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].TopDepthMM < ordered[j].TopDepthMM })
 	for index, layer := range ordered {
 		if err := layer.Validate(); err != nil {

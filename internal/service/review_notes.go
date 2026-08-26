@@ -44,6 +44,8 @@ func (l *Lab) ListReviewNotes(ctx context.Context, reviewID string) ([]model.Rev
 }
 
 func (l *Lab) ResolveReviewNote(ctx context.Context, id string) (model.ReviewNote, error) {
+	l.noteMu.Lock()
+	defer l.noteMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.ReviewNote{}, err
 	}
@@ -58,6 +60,9 @@ func (l *Lab) ResolveReviewNote(ctx context.Context, id string) (model.ReviewNot
 	note.Resolved = true
 	note.ResolvedAt = &now
 	if err := l.store.SaveReviewNote(note); err != nil {
+		return model.ReviewNote{}, err
+	}
+	if err := l.store.Event(id, "review.note_resolved"); err != nil {
 		return model.ReviewNote{}, err
 	}
 	return note, nil

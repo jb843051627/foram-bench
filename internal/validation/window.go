@@ -2,7 +2,7 @@ package validation
 
 import "time"
 
-func InWindow(t, start, end time.Time) bool { return !t.Before(start) && !t.After(end) }
+func InWindow(t, start, end time.Time) bool { return !t.Before(start) && t.Before(end) }
 func Recent(t time.Time, limit time.Duration, now time.Time) bool {
 	return !t.After(now) && now.Sub(t) <= limit
 }

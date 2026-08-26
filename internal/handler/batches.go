@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/jb843051627/foram-bench/internal/service"
 )
@@ -38,13 +40,25 @@ func (h *Handler) getBatch(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, batch)
 }
 
-func expectedRevision(r *http.Request) int {
-	value, _ := strconv.Atoi(r.URL.Query().Get("revision"))
-	return value
+func expectedRevision(r *http.Request) (int, error) {
+	raw := strings.TrimSpace(r.URL.Query().Get("revision"))
+	if raw == "" {
+		return 0, nil
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil {
+		return 0, fmt.Errorf("invalid batch revision %q: %w", raw, err)
+	}
+	return value, nil
 }
 
 func (h *Handler) startBatch(w http.ResponseWriter, r *http.Request) {
-	batch, err := h.lab.StartBatch(r.Context(), pathID(r), expectedRevision(r))
+	revision, err := expectedRevision(r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	batch, err := h.lab.StartBatch(r.Context(), pathID(r), revision)
 	if err != nil {
 		writeError(w, http.StatusUnprocessableEntity, err)
 		return
@@ -53,7 +67,12 @@ func (h *Handler) startBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) completeBatch(w http.ResponseWriter, r *http.Request) {
-	batch, err := h.lab.CompleteBatch(r.Context(), pathID(r), expectedRevision(r))
+	revision, err := expectedRevision(r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	batch, err := h.lab.CompleteBatch(r.Context(), pathID(r), revision)
 	if err != nil {
 		writeError(w, http.StatusUnprocessableEntity, err)
 		return
@@ -62,13 +81,18 @@ func (h *Handler) completeBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) blockBatch(w http.ResponseWriter, r *http.Request) {
+	revision, err := expectedRevision(r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
 	var body struct {
 		Reason string `json:"reason"`
 	}
 	if !h.readBody(w, r, &body) {
 		return
 	}
-	batch, err := h.lab.BlockBatch(r.Context(), pathID(r), expectedRevision(r), body.Reason)
+	batch, err := h.lab.BlockBatch(r.Context(), pathID(r), revision, body.Reason)
 	if err != nil {
 		writeError(w, http.StatusUnprocessableEntity, err)
 		return
