@@ -17,6 +17,16 @@ func (s *Store) SaveReview(review model.SectionReview) error {
 	return s.Save(reviewKind, review.ID, review)
 }
 
+func (s *Store) InsertReview(review model.SectionReview) error {
+	if err := review.Validate(); err != nil {
+		return err
+	}
+	if err := s.Insert(reviewKind, review.ID, review); err != nil {
+		return fmt.Errorf("insert review %s: %w", review.ID, model.ErrConflict)
+	}
+	return nil
+}
+
 func (s *Store) GetReview(id string) (model.SectionReview, error) {
 	var review model.SectionReview
 	err := s.Load(reviewKind, id, &review)

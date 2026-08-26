@@ -80,6 +80,16 @@ ON CONFLICT(kind, id) DO UPDATE SET payload=excluded.payload, updated_at=exclude
 	return nil
 }
 
+func (s *Store) Insert(kind, id string, value any) error {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return fmt.Errorf("marshal %s/%s: %w", kind, id, err)
+	}
+	_, err = s.db.Exec(`INSERT INTO records(kind, id, payload, updated_at) VALUES(?, ?, ?, ?)`,
+		kind, id, raw, time.Now().UTC().Format(time.RFC3339Nano))
+	return err
+}
+
 func (s *Store) Load(kind, id string, value any) error {
 	var raw []byte
 	err := s.db.QueryRow(`SELECT payload FROM records WHERE kind=? AND id=?`, kind, id).Scan(&raw)

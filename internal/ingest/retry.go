@@ -14,11 +14,20 @@ func Retry(ctx context.Context, attempts int, fn func() error) error {
 		if err = fn(); err == nil {
 			return nil
 		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(time.Duration(i+1) * time.Millisecond):
+		if err := wait(ctx, time.Duration(i+1)*time.Millisecond); err != nil {
+			return err
 		}
 	}
 	return err
+}
+
+func wait(ctx context.Context, delay time.Duration) error {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
 }

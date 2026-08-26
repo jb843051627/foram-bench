@@ -35,7 +35,7 @@ func (l *Lab) CreateBatch(ctx context.Context, input BatchInput) (model.Preparat
 	if err := batch.Validate(); err != nil {
 		return model.PreparationBatch{}, fmt.Errorf("validate batch: %w", err)
 	}
-	if err := l.store.SaveBatch(batch); err != nil {
+	if err := l.store.InsertBatch(batch); err != nil {
 		return model.PreparationBatch{}, err
 	}
 	if err := l.store.Event(batch.ID, "batch.created"); err != nil {

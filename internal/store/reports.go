@@ -17,6 +17,16 @@ func (s *Store) SaveReport(report model.Report) error {
 	return s.Save(reportKind, report.ID, report)
 }
 
+func (s *Store) InsertReport(report model.Report) error {
+	if err := report.Validate(); err != nil {
+		return err
+	}
+	if err := s.Insert(reportKind, report.ID, report); err != nil {
+		return fmt.Errorf("insert report %s: %w", report.ID, model.ErrConflict)
+	}
+	return nil
+}
+
 func (s *Store) GetReport(id string) (model.Report, error) {
 	var report model.Report
 	err := s.Load(reportKind, id, &report)

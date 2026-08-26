@@ -9,6 +9,8 @@ import (
 )
 
 func (l *Lab) AddQualityFlag(ctx context.Context, input QualityInput) (model.QualityFlag, error) {
+	l.qualityMu.Lock()
+	defer l.qualityMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.QualityFlag{}, err
 	}
@@ -38,6 +40,8 @@ func (l *Lab) GetQualityFlag(ctx context.Context, id string) (model.QualityFlag,
 }
 
 func (l *Lab) ResolveQualityFlag(ctx context.Context, id string) (model.QualityFlag, error) {
+	l.qualityMu.Lock()
+	defer l.qualityMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.QualityFlag{}, err
 	}

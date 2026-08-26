@@ -21,6 +21,13 @@ func (s *Store) SaveObservationSetAtomic(observations []model.Observation) error
 	if len(observations) == 0 {
 		return model.ErrInvalidInput
 	}
+	seen := make(map[string]struct{}, len(observations))
+	for _, observation := range observations {
+		if _, ok := seen[observation.ID]; ok {
+			return fmt.Errorf("observation %s appears more than once: %w", observation.ID, model.ErrConflict)
+		}
+		seen[observation.ID] = struct{}{}
+	}
 	return s.Transaction(func(tx *sql.Tx) error {
 		for _, observation := range observations {
 			if err := observation.Validate(); err != nil {
@@ -29,6 +36,21 @@ func (s *Store) SaveObservationSetAtomic(observations []model.Observation) error
 			if err := saveTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
 				return fmt.Errorf("save observation %s: %w", observation.ID, err)
 			}
+		}
+		return nil
+	})
+}
+
+func (s *Store) SaveObservationWithEvent(observation model.Observation, action string) error {
+	if err := observation.Validate(); err != nil {
+		return err
+	}
+	return s.Transaction(func(tx *sql.Tx) error {
+		if err := saveTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
+			return fmt.Errorf("save observation: %w", err)
+		}
+		if _, err := tx.Exec(`INSERT INTO events(subject, action, created_at) VALUES(?, ?, ?)`, observation.SectionID, action, time.Now().UTC().Format(time.RFC3339Nano)); err != nil {
+			return fmt.Errorf("save observation event: %w", err)
 		}
 		return nil
 	})

@@ -21,6 +21,8 @@ type Lab struct {
 	batchCreateMu sync.Mutex
 	reviewMu      sync.Mutex
 	reportMu      sync.Mutex
+	qualityMu     sync.Mutex
+	closeOnce     sync.Once
 	closed        chan struct{}
 }
 
@@ -45,12 +47,7 @@ func NewLabWithClock(repository *store.Store, now clock.Clock) *Lab {
 }
 
 func (l *Lab) Close() {
-	select {
-	case <-l.closed:
-		return
-	default:
-		close(l.closed)
-	}
+	l.closeOnce.Do(func() { close(l.closed) })
 	l.queue.Close()
 }
 

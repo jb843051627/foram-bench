@@ -34,7 +34,7 @@ func (l *Lab) ReviewSection(ctx context.Context, input ReviewInput) (model.Secti
 	if err := review.Validate(); err != nil {
 		return model.SectionReview{}, err
 	}
-	if err := l.store.SaveReview(review); err != nil {
+	if err := l.store.InsertReview(review); err != nil {
 		return model.SectionReview{}, err
 	}
 	if err := l.store.Event(section.ID, fmt.Sprintf("section.review_%s", review.Decision)); err != nil {

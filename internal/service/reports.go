@@ -94,7 +94,7 @@ func (l *Lab) GenerateReport(ctx context.Context, batchID string) (model.Report,
 	if err := report.Validate(); err != nil {
 		return model.Report{}, err
 	}
-	if err := l.store.SaveReport(report); err != nil {
+	if err := l.store.InsertReport(report); err != nil {
 		return model.Report{}, err
 	}
 	if err := l.store.Event(batchID, "report.generated"); err != nil {
