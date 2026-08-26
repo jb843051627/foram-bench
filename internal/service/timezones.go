@@ -27,7 +27,7 @@ func (l *Lab) FormatSampleDate(ctx context.Context, sampleID string, at time.Tim
 func LocalizeObservation(sample model.Sample, observation model.Observation) (time.Time, error) {
 	location, err := time.LoadLocation(sample.TimeZone)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, fmt.Errorf("load observation timezone %q: %w", sample.TimeZone, err)
 	}
 	return observation.ObservedAt.In(location), nil
 }

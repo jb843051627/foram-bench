@@ -37,7 +37,7 @@ func (l *Lab) GenerateReport(ctx context.Context, batchID string) (model.Report,
 	}
 	sections, err := l.store.ListSectionsByBatch(batchID)
 	if err != nil {
-		return model.Report{}, err
+		return model.Report{}, fmt.Errorf("list sections for report: %w", err)
 	}
 	if len(sections) == 0 {
 		return model.Report{}, fmt.Errorf("batch %s has no thin sections: %w", batchID, model.ErrInvalidState)

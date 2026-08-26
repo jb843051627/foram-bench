@@ -60,7 +60,7 @@ func (l *Lab) ListReviews(ctx context.Context, sectionID string) ([]model.Sectio
 func (l *Lab) HasAcceptedReview(ctx context.Context, sectionID string) (bool, error) {
 	reviews, err := l.ListReviews(ctx, sectionID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("list reviews for section %s: %w", sectionID, err)
 	}
 	for _, review := range reviews {
 		if review.Decision == model.ReviewAccepted {

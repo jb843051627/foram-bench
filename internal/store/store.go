@@ -87,7 +87,10 @@ func (s *Store) Insert(kind, id string, value any) error {
 	}
 	_, err = s.db.Exec(`INSERT INTO records(kind, id, payload, updated_at) VALUES(?, ?, ?, ?)`,
 		kind, id, raw, time.Now().UTC().Format(time.RFC3339Nano))
-	return err
+	if err != nil {
+		return fmt.Errorf("insert %s/%s: %w", kind, id, err)
+	}
+	return nil
 }
 
 func (s *Store) Load(kind, id string, value any) error {
