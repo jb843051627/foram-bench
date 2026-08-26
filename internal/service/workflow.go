@@ -23,11 +23,19 @@ func (l *Lab) RecordObservationSet(ctx context.Context, sectionID string, inputs
 			return nil, err
 		}
 		input.SectionID = sectionID
-		observation, err := l.RecordObservation(ctx, input)
-		if err != nil {
-			return nil, fmt.Errorf("record observation %s: %w", input.ID, err)
+		observation := model.Observation{ID: input.ID, SectionID: sectionID, Observer: input.Observer,
+			Taxon: input.Taxon, Count: input.Count, Preservation: input.Preservation,
+			Confidence: input.Confidence, Notes: input.Notes, ObservedAt: input.ObservedAt}
+		if err := observation.Validate(); err != nil {
+			return nil, fmt.Errorf("validate observation %s: %w", input.ID, err)
 		}
 		result = append(result, observation)
+	}
+	if err := l.store.SaveObservationSetAtomic(result); err != nil {
+		return nil, fmt.Errorf("save observation set: %w", err)
+	}
+	for range result {
+		l.metrics.Add("observations.recorded", 1)
 	}
 	return result, nil
 }
