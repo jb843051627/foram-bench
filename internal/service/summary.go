@@ -29,6 +29,9 @@ func (l *Lab) BatchSummary(ctx context.Context, batchID string) (BatchSummary, e
 	}
 	summary := BatchSummary{Batch: batch, Sample: sample, Sections: len(sections)}
 	for _, section := range sections {
+		if err := checkContext(ctx); err != nil {
+			return BatchSummary{}, err
+		}
 		observations, err := l.store.ListObservationsBySection(section.ID)
 		if err != nil {
 			return BatchSummary{}, err

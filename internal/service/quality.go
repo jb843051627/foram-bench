@@ -72,6 +72,8 @@ func (l *Lab) ListQualityFlags(ctx context.Context, batchID string) ([]model.Qua
 }
 
 func (l *Lab) HasBlockingQuality(ctx context.Context, batchID string) (bool, error) {
+	l.qualityMu.Lock()
+	defer l.qualityMu.Unlock()
 	flags, err := l.ListQualityFlags(ctx, batchID)
 	if err != nil {
 		return false, err
