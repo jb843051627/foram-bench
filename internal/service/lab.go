@@ -11,14 +11,17 @@ import (
 )
 
 type Lab struct {
-	store      *store.Store
-	clock      clock.Clock
-	queue      *ingest.Queue
-	metrics    *metrics.Registry
-	cacheMu    sync.RWMutex
-	batchCache map[string]batchCacheEntry
-	stateMu    sync.Mutex
-	closed     chan struct{}
+	store         *store.Store
+	clock         clock.Clock
+	queue         *ingest.Queue
+	metrics       *metrics.Registry
+	cacheMu       sync.RWMutex
+	batchCache    map[string]batchCacheEntry
+	stateMu       sync.Mutex
+	batchCreateMu sync.Mutex
+	reviewMu      sync.Mutex
+	reportMu      sync.Mutex
+	closed        chan struct{}
 }
 
 type batchCacheEntry struct {

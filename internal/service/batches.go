@@ -2,12 +2,15 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jb843051627/foram-bench/internal/model"
 )
 
 func (l *Lab) CreateBatch(ctx context.Context, input BatchInput) (model.PreparationBatch, error) {
+	l.batchCreateMu.Lock()
+	defer l.batchCreateMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.PreparationBatch{}, err
 	}
@@ -17,6 +20,11 @@ func (l *Lab) CreateBatch(ctx context.Context, input BatchInput) (model.Preparat
 	}
 	if sample.Status == model.SampleArchived {
 		return model.PreparationBatch{}, fmt.Errorf("archived sample: %w", model.ErrInvalidState)
+	}
+	if _, err := l.store.GetBatch(input.ID); err == nil {
+		return model.PreparationBatch{}, fmt.Errorf("batch %s already exists: %w", input.ID, model.ErrConflict)
+	} else if !errors.Is(err, model.ErrNotFound) {
+		return model.PreparationBatch{}, err
 	}
 	now := l.clock.Now()
 	batch := model.PreparationBatch{

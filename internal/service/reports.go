@@ -14,6 +14,8 @@ import (
 )
 
 func (l *Lab) GenerateReport(ctx context.Context, batchID string) (model.Report, error) {
+	l.reportMu.Lock()
+	defer l.reportMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.Report{}, err
 	}

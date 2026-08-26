@@ -40,7 +40,7 @@ func GroupByDay(observations []model.Observation, location *time.Location) []Obs
 }
 
 func windowFor(start time.Time, observations []model.Observation) ObservationWindow {
-	result := ObservationWindow{Start: start, End: start.Add(24 * time.Hour), Taxa: make([]string, 0)}
+	result := ObservationWindow{Start: start, End: nextLocalDay(start), Taxa: make([]string, 0)}
 	seen := make(map[string]struct{})
 	for _, observation := range observations {
 		result.Count += observation.Count
@@ -55,6 +55,10 @@ func windowFor(start time.Time, observations []model.Observation) ObservationWin
 	}
 	sort.Strings(result.Taxa)
 	return result
+}
+
+func nextLocalDay(start time.Time) time.Time {
+	return time.Date(start.Year(), start.Month(), start.Day()+1, 0, 0, 0, 0, start.Location())
 }
 
 func InWindow(observation model.Observation, start, end time.Time) bool {

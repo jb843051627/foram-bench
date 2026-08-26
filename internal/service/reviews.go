@@ -8,6 +8,8 @@ import (
 )
 
 func (l *Lab) ReviewSection(ctx context.Context, input ReviewInput) (model.SectionReview, error) {
+	l.reviewMu.Lock()
+	defer l.reviewMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.SectionReview{}, err
 	}
