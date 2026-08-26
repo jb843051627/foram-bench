@@ -29,11 +29,13 @@ func (s *Store) SaveObservationSetAtomic(observations []model.Observation) error
 		}
 		seen[observation.ID] = struct{}{}
 	}
+	for _, observation := range observations {
+		if err := observation.Validate(); err != nil {
+			return fmt.Errorf("validate observation %s: %w", observation.ID, err)
+		}
+	}
 	return s.Transaction(func(tx *sql.Tx) error {
 		for _, observation := range observations {
-			if err := observation.Validate(); err != nil {
-				return fmt.Errorf("validate observation %s: %w", observation.ID, err)
-			}
 			if err := saveTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
 				return fmt.Errorf("save observation %s: %w", observation.ID, err)
 			}
