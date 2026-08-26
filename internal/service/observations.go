@@ -24,10 +24,7 @@ func (l *Lab) RecordObservation(ctx context.Context, input ObservationInput) (mo
 	if err := observation.Validate(); err != nil {
 		return model.Observation{}, err
 	}
-	if err := l.store.SaveObservation(observation); err != nil {
-		return model.Observation{}, err
-	}
-	if err := l.store.Event(input.SectionID, "observation.recorded"); err != nil {
+	if err := l.store.InsertObservationWithEvent(observation, "observation.recorded"); err != nil {
 		return model.Observation{}, err
 	}
 	l.metrics.Add("observations.recorded", 1)

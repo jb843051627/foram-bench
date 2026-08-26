@@ -175,6 +175,16 @@ ON CONFLICT(kind, id) DO UPDATE SET payload=excluded.payload, updated_at=exclude
 	return err
 }
 
+func insertTx(tx *sql.Tx, kind, id string, value any, at time.Time) error {
+	raw, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`INSERT INTO records(kind, id, payload, updated_at) VALUES(?, ?, ?, ?)`,
+		kind, id, raw, at.UTC().Format(time.RFC3339Nano))
+	return err
+}
+
 func decodeList[T any](s *Store, kind string) ([]T, error) {
 	items := make([]T, 0)
 	err := s.List(kind, func(raw []byte) error {

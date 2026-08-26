@@ -19,6 +19,7 @@ type Lab struct {
 	batchCache    map[string]batchCacheEntry
 	stateMu       sync.Mutex
 	batchCreateMu sync.Mutex
+	sectionMu     sync.Mutex
 	reviewMu      sync.Mutex
 	reportMu      sync.Mutex
 	qualityMu     sync.Mutex

@@ -57,6 +57,21 @@ func (s *Store) SaveObservationWithEvent(observation model.Observation, action s
 	})
 }
 
+func (s *Store) InsertObservationWithEvent(observation model.Observation, action string) error {
+	if err := observation.Validate(); err != nil {
+		return err
+	}
+	return s.Transaction(func(tx *sql.Tx) error {
+		if err := insertTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
+			return fmt.Errorf("insert observation: %w", err)
+		}
+		if _, err := tx.Exec(`INSERT INTO events(subject, action, created_at) VALUES(?, ?, ?)`, observation.SectionID, action, time.Now().UTC().Format(time.RFC3339Nano)); err != nil {
+			return fmt.Errorf("insert observation event: %w", err)
+		}
+		return nil
+	})
+}
+
 func (s *Store) GetObservation(id string) (model.Observation, error) {
 	var observation model.Observation
 	err := s.Load(observationKind, id, &observation)

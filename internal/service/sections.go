@@ -50,6 +50,8 @@ func (l *Lab) ListSections(ctx context.Context, batchID string) ([]model.ThinSec
 }
 
 func (l *Lab) AdvanceSection(ctx context.Context, id, target string) (model.ThinSection, error) {
+	l.sectionMu.Lock()
+	defer l.sectionMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.ThinSection{}, err
 	}
