@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Foram Bench</title>
+  <link rel="stylesheet" href="/web/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">MICROFOSSIL LAB NOTEBOOK</p>
+      <h1>Foram Bench</h1>
+    </div>
+    <span class="status-dot">本地实验室服务</span>
+  </header>
+  <main class="shell">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">样品台账</p>
+        <h2>把一块样品的制备过程留完整</h2>
+        <p>从采集地点到薄片复核，按批次查看当前状态、质量旗标和待处理观察。</p>
+      </div>
+      <button id="refresh" class="button button-dark" type="button">刷新数据</button>
+    </section>
+    <section class="stats" aria-label="实验室统计">
+      <article><span>已登记样品</span><strong id="sample-count">0</strong></article>
+      <article><span>制备批次</span><strong id="batch-count">0</strong></article>
+      <article><span>观察记录</span><strong id="observation-count">0</strong></article>
+      <article><span>生成报告</span><strong id="report-count">0</strong></article>
+    </section>
+    <section class="workspace">
+      <div class="panel panel-form">
+        <div class="panel-head"><h3>登记样品</h3><span>STEP 01</span></div>
+        <form id="sample-form">
+          <label>样品编号<input name="id" required placeholder="FBR-2026-001"></label>
+          <label>调查点代码<input name="site_code" required placeholder="KARST-A7"></label>
+          <label>采样地点<input name="location" required placeholder="北坡剖面 7 号层"></label>
+          <label>材料描述<input name="material" required placeholder="灰绿色泥晶灰岩"></label>
+          <div class="form-row"><label>深度(mm)<input name="depth_mm" type="number" min="0" required value="120"></label><label>时区<input name="time_zone" required value="Asia/Shanghai"></label></div>
+          <label>采集时间<input name="collection_date" type="datetime-local" required></label>
+          <label>备注<textarea name="notes" rows="3" placeholder="野外观察或制备注意事项"></textarea></label>
+          <button class="button button-accent" type="submit">保存样品</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>最近样品</h3><span id="sample-message">读取中</span></div>
+        <div id="sample-list" class="sample-list"></div>
+      </div>
+    </section>
+  </main>
+  <script src="/web/app.js"></script>
+</body>
+</html>
