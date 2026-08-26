@@ -66,8 +66,9 @@ func (s *Store) InsertObservationWithEvent(observation model.Observation, action
 		return err
 	}
 	return s.Transaction(func(tx *sql.Tx) error {
+		defer tx.Rollback()
 		if err := insertTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
-			return fmt.Errorf("insert observation: %w", err)
+			return fmt.Errorf("insert observation %s: %w", observation.ID, model.ErrConflict)
 		}
 		if _, err := tx.Exec(`INSERT INTO events(subject, action, created_at) VALUES(?, ?, ?)`, observation.SectionID, action, time.Now().UTC().Format(time.RFC3339Nano)); err != nil {
 			return fmt.Errorf("insert observation event: %w", err)
