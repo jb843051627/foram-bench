@@ -34,7 +34,6 @@ func (q *Queue) loop() {
 			select {
 			case job.Done <- err:
 			case <-q.stop:
-			default:
 			}
 		case <-q.stop:
 			return
