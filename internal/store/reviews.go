@@ -19,7 +19,7 @@ func (s *Store) SaveReview(review model.SectionReview) error {
 
 func (s *Store) InsertReview(review model.SectionReview) error {
 	if err := review.Validate(); err != nil {
-		return err
+		return fmt.Errorf("validate review: %w", err)
 	}
 	if err := s.Insert(reviewKind, review.ID, review); err != nil {
 		return fmt.Errorf("insert review %s: %w", review.ID, model.ErrConflict)

@@ -60,7 +60,7 @@ func (l *Lab) GenerateReport(ctx context.Context, batchID string) (model.Report,
 		}
 		accepted, err := l.HasAcceptedReview(ctx, section.ID)
 		if err != nil {
-			return model.Report{}, err
+			return model.Report{}, fmt.Errorf("load accepted review for section %s: %w", section.ID, err)
 		}
 		if !accepted {
 			return model.Report{}, fmt.Errorf("section %s lacks accepted review: %w", section.ID, model.ErrInvalidState)
