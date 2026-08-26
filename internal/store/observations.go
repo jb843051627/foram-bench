@@ -35,7 +35,6 @@ func (s *Store) SaveObservationSetAtomic(observations []model.Observation) error
 		}
 	}
 	return s.Transaction(func(tx *sql.Tx) error {
-		defer tx.Rollback()
 		for _, observation := range observations {
 			if err := saveTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
 				return fmt.Errorf("save observation %s: %w", observation.ID, err)
@@ -50,7 +49,6 @@ func (s *Store) SaveObservationWithEvent(observation model.Observation, action s
 		return err
 	}
 	return s.Transaction(func(tx *sql.Tx) error {
-		defer tx.Rollback()
 		if err := saveTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
 			return fmt.Errorf("save observation: %w", err)
 		}
@@ -66,7 +64,6 @@ func (s *Store) InsertObservationWithEvent(observation model.Observation, action
 		return err
 	}
 	return s.Transaction(func(tx *sql.Tx) error {
-		defer tx.Rollback()
 		if err := insertTx(tx, observationKind, observation.ID, observation, observation.ObservedAt); err != nil {
 			return fmt.Errorf("insert observation %s: %w", observation.ID, model.ErrConflict)
 		}
