@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -21,6 +22,8 @@ type SiteInput struct {
 }
 
 func (l *Lab) RegisterSite(ctx context.Context, input SiteInput) (model.CollectionSite, error) {
+	l.siteMu.Lock()
+	defer l.siteMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.CollectionSite{}, err
 	}
@@ -34,7 +37,12 @@ func (l *Lab) RegisterSite(ctx context.Context, input SiteInput) (model.Collecti
 	if err := site.Validate(); err != nil {
 		return model.CollectionSite{}, fmt.Errorf("validate site: %w", err)
 	}
-	if err := l.store.SaveSite(site); err != nil {
+	if _, err := l.store.GetSite(site.Code); err == nil {
+		return model.CollectionSite{}, fmt.Errorf("site %s already exists: %w", site.Code, model.ErrConflict)
+	} else if !errors.Is(err, model.ErrNotFound) {
+		return model.CollectionSite{}, err
+	}
+	if err := l.store.InsertSite(site); err != nil {
 		return model.CollectionSite{}, err
 	}
 	if err := l.store.Event(site.Code, "site.registered"); err != nil {

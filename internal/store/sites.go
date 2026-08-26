@@ -17,6 +17,16 @@ func (s *Store) SaveSite(site model.CollectionSite) error {
 	return s.Save(siteKind, site.Code, site)
 }
 
+func (s *Store) InsertSite(site model.CollectionSite) error {
+	if err := site.Validate(); err != nil {
+		return err
+	}
+	if err := s.Insert(siteKind, site.Code, site); err != nil {
+		return fmt.Errorf("insert site %s: %w", site.Code, model.ErrConflict)
+	}
+	return nil
+}
+
 func (s *Store) GetSite(code string) (model.CollectionSite, error) {
 	var site model.CollectionSite
 	err := s.Load(siteKind, code, &site)
