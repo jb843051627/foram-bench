@@ -20,12 +20,12 @@ func (s *Store) SaveObservation(observation model.Observation) error {
 
 func (s *Store) SaveObservationSetAtomic(observations []model.Observation) error {
 	if len(observations) == 0 {
-		panic("empty observation batch")
+		return fmt.Errorf("empty observation batch: %w", model.ErrInvalidInput)
 	}
 	seen := make(map[string]struct{}, len(observations))
 	for _, observation := range observations {
 		if _, ok := seen[observation.ID]; ok {
-			panic("duplicate observation id")
+			return fmt.Errorf("duplicate observation id %s: %w", observation.ID, model.ErrConflict)
 		}
 		seen[observation.ID] = struct{}{}
 	}

@@ -3,6 +3,8 @@ package ingest
 import (
 	"context"
 	"sync"
+
+	"github.com/jb843051627/foram-bench/internal/model"
 )
 
 type Job struct {
@@ -12,10 +14,12 @@ type Job struct {
 	Done chan error
 }
 type Queue struct {
-	jobs chan Job
-	stop chan struct{}
-	once sync.Once
-	wg   sync.WaitGroup
+	jobs   chan Job
+	stop   chan struct{}
+	once   sync.Once
+	mu     sync.RWMutex
+	closed bool
+	wg     sync.WaitGroup
 }
 
 func New(size int) *Queue {
@@ -30,7 +34,15 @@ func (q *Queue) loop() {
 		select {
 		case job := <-q.jobs:
 			ctx := jobContext(job)
-			err := job.Run(ctx)
+			var err error
+			if job.Run == nil {
+				err = model.ErrInvalidInput
+			} else {
+				err = job.Run(ctx)
+			}
+			if job.Done == nil {
+				continue
+			}
 			select {
 			case job.Done <- err:
 			case <-q.stop:
@@ -51,18 +63,30 @@ func (q *Queue) Submit(ctx context.Context, job Job) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	select {
-	case <-q.stop:
-		return context.Canceled
-	default:
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	q.mu.RLock()
+	closed := q.closed
+	q.mu.RUnlock()
+	if closed {
+		return model.ErrQueueClosed
 	}
 	select {
-	case q.jobs <- job:
-		return nil
 	case <-ctx.Done():
 		return ctx.Err()
+	case q.jobs <- job:
+		return nil
 	case <-q.stop:
-		return context.Canceled
+		return model.ErrQueueClosed
 	}
 }
-func (q *Queue) Close() { q.once.Do(func() { close(q.stop); q.wg.Wait() }) }
+func (q *Queue) Close() {
+	q.once.Do(func() {
+		q.mu.Lock()
+		q.closed = true
+		close(q.stop)
+		q.mu.Unlock()
+		q.wg.Wait()
+	})
+}

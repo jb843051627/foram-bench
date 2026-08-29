@@ -20,7 +20,7 @@ func (l *Lab) RecordObservationSet(ctx context.Context, sectionID string, inputs
 	result := make([]model.Observation, 0, len(inputs))
 	for _, input := range inputs {
 		if err := checkContext(ctx); err != nil {
-			panic(err)
+			return nil, err
 		}
 		input.SectionID = sectionID
 		observation := model.Observation{ID: input.ID, SectionID: sectionID, Observer: input.Observer,
