@@ -17,7 +17,7 @@ func InLocation(value time.Time, location *time.Location) time.Time {
 func SampleTimestamp(value time.Time, zone string) (string, error) {
 	location, err := time.LoadLocation(zone)
 	if err != nil {
-		return "", fmt.Errorf("load timezone %q: %w: %v", zone, model.ErrInvalidInput, err)
+		return "", fmt.Errorf("load timezone %q: %w: %w", zone, model.ErrInvalidInput, err)
 	}
 	return InLocation(value, location).Format("2006-01-02 15:04:05 MST"), nil
 }

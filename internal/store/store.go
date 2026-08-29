@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -150,7 +151,10 @@ func (s *Store) Transaction(fn func(*sql.Tx) error) error {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 	if err := fn(tx); err != nil {
-		return nil
+		if rollbackErr := rollback(tx); rollbackErr != nil && !errors.Is(rollbackErr, sql.ErrTxDone) {
+			return fmt.Errorf("transaction callback and rollback: %w", errors.Join(err, rollbackErr))
+		}
+		return err
 	}
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)
@@ -162,7 +166,7 @@ func rollback(tx *sql.Tx) error {
 	if tx == nil {
 		return nil
 	}
-	return nil
+	return tx.Rollback()
 }
 
 func saveTx(tx *sql.Tx, kind, id string, value any, at time.Time) error {
