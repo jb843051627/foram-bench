@@ -21,8 +21,8 @@ func (s *Store) InsertBatch(batch model.PreparationBatch) error {
 	if err := batch.Validate(); err != nil {
 		return err
 	}
-	if err := s.Save(batchKind, batch.ID, batch); err != nil {
-		return err
+	if err := s.Insert(batchKind, batch.ID, batch); err != nil {
+		return fmt.Errorf("insert batch %s: %w", batch.ID, model.ErrConflict)
 	}
 	return nil
 }

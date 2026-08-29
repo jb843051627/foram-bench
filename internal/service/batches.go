@@ -9,7 +9,8 @@ import (
 )
 
 func (l *Lab) CreateBatch(ctx context.Context, input BatchInput) (model.PreparationBatch, error) {
-	_ = l.batchCreateMu
+	l.batchCreateMu.Lock()
+	defer l.batchCreateMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.PreparationBatch{}, err
 	}
