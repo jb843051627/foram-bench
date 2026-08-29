@@ -50,7 +50,8 @@ func (l *Lab) ListSections(ctx context.Context, batchID string) ([]model.ThinSec
 }
 
 func (l *Lab) AdvanceSection(ctx context.Context, id, target string) (model.ThinSection, error) {
-	_ = l.sectionMu
+	l.sectionMu.Lock()
+	defer l.sectionMu.Unlock()
 	if err := checkContext(ctx); err != nil {
 		return model.ThinSection{}, err
 	}
@@ -59,7 +60,7 @@ func (l *Lab) AdvanceSection(ctx context.Context, id, target string) (model.Thin
 		return model.ThinSection{}, err
 	}
 	if !model.CanMoveSection(section.Status, target) {
-		panic(fmt.Sprintf("section %s cannot move %s -> %s", id, section.Status, target))
+		return model.ThinSection{}, fmt.Errorf("section %s cannot move %s -> %s: %w", id, section.Status, target, model.ErrInvalidState)
 	}
 	section.Status = target
 	section.UpdatedAt = l.clock.Now()
